@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerrit Bosua | Data Platform Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --bg3: #1a2234;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --accent3: #34d399;
+  --accent4: #fb923c;
+  --accent5: #f472b6;
+  --border: #1e293b;
+  --glow: rgba(56, 189, 248, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 1.2rem 0;
+  backdrop-filter: blur(20px);
+  background: rgba(10, 14, 23, 0.8);
+  border-bottom: 1px solid var(--border);
+}
+
+nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.logo span { color: var(--muted); }
+
+nav ul {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.3s;
+  letter-spacing: 0.02em;
+}
+
+nav a:hover { color: var(--accent); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-top: 5rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.hero-text h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.hero-text h1 .highlight {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-text .subtitle {
+  font-size: 1.25rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  line-height: 1.7;
+  max-width: 520px;
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2.5rem;
+}
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--bg2);
+  transition: all 0.3s;
+}
+
+.tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 20px var(--glow);
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: var(--bg);
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px var(--glow); }
+
+.btn-outline {
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: transparent;
+}
+
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Pipeline viz */
+.hero-visual {
+  position: relative;
+}
+
+.pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pipeline-stage {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.4s;
+  animation: stageIn 0.6s ease-out backwards;
+}
+
+.pipeline-stage:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 30px var(--glow);
+  transform: translateX(8px);
+}
+
+.pipeline-stage:nth-child(1) { animation-delay: 0.2s; }
+.pipeline-stage:nth-child(2) { animation-delay: 0.35s; }
+.pipeline-stage:nth-child(3) { animation-delay: 0.5s; }
+.pipeline-stage:nth-child(4) { animation-delay: 0.65s; }
+.pipeline-stage:nth-child(5) { animation-delay: 0.8s; }
+.pipeline-stage:nth-child(6) { animation-delay: 0.95s; }
+.pipeline-stage:nth-child(7) { animation-delay: 1.1s; }
+
+@keyframes stageIn {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.stage-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.stage-content { flex: 1; }
+
+.stage-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.15rem;
+}
+
+.stage-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.stage-tech {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+}
+
+.pipeline-connector {
+  width: 2px;
+  height: 20px;
+  margin-left: 2.8rem;
+  position: relative;
+}
+
+.pipeline-connector::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+  opacity: 0.4;
+}
+
+/* SECTIONS */
+section {
+  padding: 6rem 0;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  color: var(--muted);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin-bottom: 3rem;
+}
+
+/* CAPABILITIES GRID */
+.cap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.cap-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+
+.cap-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.cap-card:hover {
+  border-color: transparent;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.cap-card:hover::before { opacity: 1; }
+
+.cap-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.cap-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent2), var(--accent5)); }
+.cap-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent3), var(--accent)); }
+.cap-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent4), var(--accent5)); }
+.cap-card:nth-child(5)::before { background: linear-gradient(90deg, var(--accent5), var(--accent2)); }
+.cap-card:nth-child(6)::before { background: linear-gradient(90deg, var(--accent), var(--accent3)); }
+
+.cap-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.cap-title {
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin-bottom: 0.6rem;
+}
+
+.cap-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.cap-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cap-tech {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background: var(--bg3);
+  color: var(--muted);
+}
+
+/* NUMBERS */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  padding: 3rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin: 4rem 0;
+}
+
+.number-item { text-align: center; }
+
+.number-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.number-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+/* PROJECTS */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.project-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.4s;
+}
+
+.project-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.project-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.6rem;
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+
+.project-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.project-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.project-metrics {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.project-metric {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.project-metric strong {
+  color: var(--text);
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 0.1rem;
+}
+
+/* EXPERIENCE TIMELINE */
+.timeline { position: relative; padding-left: 2rem; }
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 3rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0.4rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--bg);
+  transform: translateX(-4px);
+}
+
+.timeline-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.timeline-role {
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin-bottom: 0.2rem;
+}
+
+.timeline-company {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
+}
+
+.timeline-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+/* EDUCATION */
+.edu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.edu-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.edu-degree { font-weight: 600; font-size: 1rem; margin-bottom: 0.3rem; }
+.edu-school { color: var(--muted); font-size: 0.9rem; }
+.edu-year { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); margin-top: 0.3rem; }
+
+/* CONTACT */
+.contact-section {
+  text-align: center;
+  padding: 6rem 0;
+}
+
+.contact-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.contact-link:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--glow);
+}
+
+/* FOOTER */
+footer {
+  padding: 2rem 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .hero-text h1 { font-size: 2.5rem; }
+  .cap-grid { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: 1fr; }
+  .numbers { grid-template-columns: repeat(2, 1fr); }
+  .edu-grid { grid-template-columns: 1fr; }
+  nav ul { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo">gerrit<span>.data</span></div>
+    <ul>
+      <li><a href="#capabilities">Capabilities</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1>Source to<br><span class="highlight">Outcome.</span></h1>
+        <p class="subtitle">Data Analytics Manager with 15+ years building end-to-end data platforms. From raw source systems through to executive dashboards and AI-driven insights &mdash; I build the full stack.</p>
+        <div class="hero-tags">
+          <span class="tag">Azure</span>
+          <span class="tag">SSAS / VertiPaq</span>
+          <span class="tag">Databricks</span>
+          <span class="tag">Python</span>
+          <span class="tag">SQL</span>
+          <span class="tag">Power BI</span>
+          <span class="tag">DAX</span>
+          <span class="tag">ETL/ELT</span>
+          <span class="tag">AI/ML</span>
+        </div>
+        <div class="hero-cta">
+          <a href="#contact" class="btn btn-primary">Get in Touch</a>
+          <a href="#capabilities" class="btn btn-outline">View Capabilities</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="pipeline">
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(56,189,248,0.1); color: var(--accent);">&#9683;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent);">Source Systems</div>
+              <div class="stage-title">Data Ingestion</div>
+              <div class="stage-tech">APIs, Payment Platforms, CRM, Event Streams, App Stores</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(129,140,248,0.1); color: var(--accent2);">&#9881;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent2);">Orchestration</div>
+              <div class="stage-title">ETL / ELT Pipelines</div>
+              <div class="stage-tech">Azure Data Factory, Databricks, Synapse</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(52,211,153,0.1); color: var(--accent3);">&#9707;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent3);">Storage & Modeling</div>
+              <div class="stage-title">Warehouse & Dimensional Models</div>
+              <div class="stage-tech">MSSQL, Delta Lake, Star Schema, 48-table models</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(251,146,60,0.1); color: var(--accent4);">&#9670;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent4);">Semantic Layer</div>
+              <div class="stage-title">SSAS Tabular / VertiPaq Engine</div>
+              <div class="stage-tech">300GB in-memory, 12B+ rows, advanced DAX</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(244,114,182,0.1); color: var(--accent5);">&#9673;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent5);">Visualization</div>
+              <div class="stage-title">Dashboards & Reporting</div>
+              <div class="stage-tech">Power BI Premium, Executive Dashboards, Self-Serve</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(56,189,248,0.1); color: var(--accent);">&#9733;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent);">AI & Automation</div>
+              <div class="stage-title">ML Models & Intelligent Systems</div>
+              <div class="stage-tech">Python, Monte Carlo, Forecasting, C++</div>
+            </div>
+          </div>
+          <div class="pipeline-connector"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon" style="background: rgba(52,211,153,0.1); color: var(--accent3);">&#10003;</div>
+            <div class="stage-content">
+              <div class="stage-label" style="color: var(--accent3);">Outcome</div>
+              <div class="stage-title">Business Decisions & Revenue Impact</div>
+              <div class="stage-tech">Multi-million dollar revenue platforms, strategic investment decisions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<div class="container">
+  <div class="numbers">
+    <div class="number-item">
+      <div class="number-value">15+</div>
+      <div class="number-label">Years Experience</div>
+    </div>
+    <div class="number-item">
+      <div class="number-value">12B+</div>
+      <div class="number-label">Rows Optimized</div>
+    </div>
+    <div class="number-item">
+      <div class="number-value">300GB</div>
+      <div class="number-label">In-Memory Semantic Layer</div>
+    </div>
+    <div class="number-item">
+      <div class="number-value">Millions</div>
+      <div class="number-label">Subscriber Accounts</div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPABILITIES -->
+<section id="capabilities">
+  <div class="container">
+    <div class="section-label">What I Build</div>
+    <h2 class="section-title">Capabilities</h2>
+    <p class="section-subtitle">End-to-end data platform delivery &mdash; from source system integration through to business outcomes.</p>
+
+    <div class="cap-grid">
+      <div class="cap-card">
+        <div class="cap-icon">&#9881;</div>
+        <h3 class="cap-title">Data Engineering & Pipelines</h3>
+        <p class="cap-desc">End-to-end ETL/ELT pipelines integrating diverse transactional, streaming, and payment data sources. Event-driven architectures processing subscription state changes in near-real-time.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">Azure Data Factory</span>
+          <span class="cap-tech">Databricks</span>
+          <span class="cap-tech">Synapse</span>
+          <span class="cap-tech">Python</span>
+          <span class="cap-tech">Spark SQL</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-icon">&#9707;</div>
+        <h3 class="cap-title">Semantic Modeling & VertiPaq</h3>
+        <p class="cap-desc">300GB in-memory SSAS Tabular models with intimate knowledge of the VertiPaq columnar engine &mdash; compression tuning, partition strategies, and the architecture that now powers Microsoft Fabric.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">SSAS Tabular</span>
+          <span class="cap-tech">VertiPaq</span>
+          <span class="cap-tech">DAX</span>
+          <span class="cap-tech">Calculation Groups</span>
+          <span class="cap-tech">MDX</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-icon">&#9670;</div>
+        <h3 class="cap-title">Cost Optimization</h3>
+        <p class="cap-desc">Expert at differentiating between cube aggregations and row-level measure requirements for large BI deployments. Delivered significant annual savings by making the right architecture calls on when data needs engine-level granularity vs. pre-aggregation.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">BI Cost Architecture</span>
+          <span class="cap-tech">Cube vs Row-Level</span>
+          <span class="cap-tech">Compression Tuning</span>
+          <span class="cap-tech">Partition Strategy</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-icon">&#9683;</div>
+        <h3 class="cap-title">Revenue & Subscription Analytics</h3>
+        <p class="cap-desc">Deep domain expertise in subscription revenue mechanics &mdash; CLV, ARPU, churn, retention cohorts, pricing models, revenue recognition, and P&L attribution across multi-channel payment ecosystems.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">CLV/ARPU</span>
+          <span class="cap-tech">Cohort Analysis</span>
+          <span class="cap-tech">Revenue Recognition</span>
+          <span class="cap-tech">Pricing Engines</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-icon">&#9673;</div>
+        <h3 class="cap-title">Dashboards & BI</h3>
+        <p class="cap-desc">Production executive dashboards and self-serve reporting layers serving Finance, Product, Marketing, and C-suite stakeholders. Translate complex data into clear strategic insights.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">Power BI Premium</span>
+          <span class="cap-tech">Executive Dashboards</span>
+          <span class="cap-tech">Self-Serve Analytics</span>
+          <span class="cap-tech">KPI Frameworks</span>
+        </div>
+      </div>
+
+      <div class="cap-card">
+        <div class="cap-icon">&#9733;</div>
+        <h3 class="cap-title">AI, ML & Automated Systems</h3>
+        <p class="cap-desc">Python-based ML applications including Monte Carlo simulation, risk analytics, forecasting models (Prophet), and automated trading systems with C++ order execution components.</p>
+        <div class="cap-tech-list">
+          <span class="cap-tech">Python</span>
+          <span class="cap-tech">Monte Carlo</span>
+          <span class="cap-tech">Prophet</span>
+          <span class="cap-tech">C++</span>
+          <span class="cap-tech">Risk Analytics</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-label">Real Work</div>
+    <h2 class="section-title">Key Projects</h2>
+    <p class="section-subtitle">Production systems I've built and maintain.</p>
+
+    <div class="project-grid">
+      <div class="project-card">
+        <div class="project-tag" style="background: rgba(56,189,248,0.1); color: var(--accent);">Enterprise Platform</div>
+        <h3 class="project-title">Subscription Revenue Analytics Platform</h3>
+        <p class="project-desc">End-to-end revenue tracking system integrating multiple payment channels (app stores, telco billing, direct payments). 48-table dimensional model with automated revenue recognition, pricing rule engine, and subscription ledger for a major MENA streaming platform.</p>
+        <div class="project-metrics">
+          <div class="project-metric"><strong>8-figure</strong>Monthly revenue</div>
+          <div class="project-metric"><strong>Millions</strong>Accounts</div>
+          <div class="project-metric"><strong>48</strong>Table model</div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-tag" style="background: rgba(251,146,60,0.1); color: var(--accent4);">Semantic Layer</div>
+        <h3 class="project-title">300GB SSAS Tabular Semantic Layer</h3>
+        <p class="project-desc">Enterprise-scale in-memory analytical model handling billions of rows. Advanced DAX measures, calculation groups, cross-year cohort analysis, and CLV calculations with deep VertiPaq engine optimization.</p>
+        <div class="project-metrics">
+          <div class="project-metric"><strong>300GB</strong>In-memory</div>
+          <div class="project-metric"><strong>12B+</strong>Rows</div>
+          <div class="project-metric"><strong>Significant</strong>Cost savings</div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-tag" style="background: rgba(52,211,153,0.1); color: var(--accent3);">Full-Stack App</div>
+        <h3 class="project-title">Payments Admin Portal</h3>
+        <p class="project-desc">19-module Python application for payment operations management. API integrations, data workflows, and operational tooling built from scratch with no existing blueprint.</p>
+        <div class="project-metrics">
+          <div class="project-metric"><strong>19</strong>Modules</div>
+          <div class="project-metric"><strong>Python</strong>Full-stack</div>
+          <div class="project-metric"><strong>0-1</strong>Greenfield</div>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-tag" style="background: rgba(129,140,248,0.1); color: var(--accent2);">AI / Quantitative</div>
+        <h3 class="project-title">Systematic Trading & Risk Analytics</h3>
+        <p class="project-desc">Python application with Monte Carlo simulation engine for strategy validation and risk assessment. Portfolio analytics (drawdown, Kelly criterion, exposure). C++ order entry system for automated execution.</p>
+        <div class="project-metrics">
+          <div class="project-metric"><strong>Python</strong>Strategy engine</div>
+          <div class="project-metric"><strong>C++</strong>Order entry</div>
+          <div class="project-metric"><strong>MC Sim</strong>Risk model</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="container">
+    <div class="section-label">Career</div>
+    <h2 class="section-title">Experience</h2>
+    <p class="section-subtitle">15+ years across streaming, financial services, and data platforms.</p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">2022 &mdash; Present</div>
+        <div class="timeline-role">Data Analytics Manager</div>
+        <div class="timeline-company">Leading MENA Streaming Platform &middot; Dubai, UAE</div>
+        <div class="timeline-desc">Own data architecture and analytics for a major subscription streaming platform. Multi-million dollar monthly revenue, millions of accounts, multi-channel payment integration, 300GB SSAS semantic layer, 48-table Databricks revenue model.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2019 &mdash; 2022</div>
+        <div class="timeline-role">Data Science for Growth</div>
+        <div class="timeline-company">Showmax &middot; Johannesburg, South Africa</div>
+        <div class="timeline-desc">Cloud-based analytics infrastructure on Azure for streaming and subscription datasets across 50+ African markets. Semantic models, marketing analytics, and growth reporting.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2012 &mdash; 2019</div>
+        <div class="timeline-role">Business Analyst</div>
+        <div class="timeline-company">Ver-Tex Solutions &middot; Pretoria, South Africa</div>
+        <div class="timeline-desc">BI solutions and financial data models for operational and executive decision-making in financial services. Budgeting, planning, performance monitoring, and resource optimization.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="container">
+    <div class="section-label">Credentials</div>
+    <h2 class="section-title">Education & Certifications</h2>
+
+    <div class="edu-grid">
+      <div class="edu-card">
+        <div class="edu-degree">MBA</div>
+        <div class="edu-school">Gordon Institute of Business Science (GIBS)</div>
+        <div class="edu-year">2018 &mdash; 2020</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-degree">PGDip General Management</div>
+        <div class="edu-school">Gordon Institute of Business Science</div>
+        <div class="edu-year">2018</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-degree">B.Com (Hons) &mdash; Financial Management</div>
+        <div class="edu-school">University of Pretoria &middot; Investment Management</div>
+        <div class="edu-year">2008</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-degree">B.Com &mdash; Investment Management</div>
+        <div class="edu-school">University of Pretoria</div>
+        <div class="edu-year">2005 &mdash; 2007</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.6rem;">
+      <span class="tag">Azure Data Fundamentals</span>
+      <span class="tag">Azure Fundamentals</span>
+      <span class="tag">Apache Spark SQL</span>
+      <span class="tag">Power BI</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-section">
+  <div class="container">
+    <div class="section-label">Let's Talk</div>
+    <h2 class="section-title">Get in Touch</h2>
+    <p style="color: var(--muted); max-width: 500px; margin: 0 auto;">Based in Dubai, UAE. Open to data architecture, analytics engineering, and revenue analytics roles.</p>
+    <div class="contact-links">
+      <a href="mailto:gerritbosua@gmail.com" class="contact-link">&#9993; gerritbosua@gmail.com</a>
+      <a href="tel:+971569116881" class="contact-link">&#9742; (056) 911 6881</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Gerrit Bosua &middot; Dubai, UAE &middot; 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
